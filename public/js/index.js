@@ -3,9 +3,8 @@ socket.on('connect', function () {
   console.log('Connected to server');
 
   socket.emit('createMessage', {
-    to: 'someOneNew',
-    subject: 'Create New Message',
-    body: 'This is a new message about testing socket.io'
+    from: 'john',
+    text: 'This is a new message about testing socket.io'
   });
 });
 

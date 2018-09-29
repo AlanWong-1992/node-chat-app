@@ -17,12 +17,17 @@ io.on('connection', (socket) => {
 
   socket.emit('newMessage', {
     from: 'alan',
-    subject: 'Emit new message',
+    text: 'Emit new message',
     createdAt: '123'
   });
 
   socket.on('createMessage', (createMessage) => {
     console.log('create Message', createMessage);
+    io.emit('newMessage', {
+      from: createMessage.from,
+      text: createMessage.text,
+      createdAt: new Date().getTime()
+    });
   })
 
   socket.on('disconnect', () => {
