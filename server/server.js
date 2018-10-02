@@ -2,7 +2,7 @@ const path = require('path');
 const http = require('http');
 const express = require('express');
 const socketIO = require('socket.io');
-
+const {generateMessage} = require('./utils/message');
 const publicPath = path.join(__dirname, '/../public');
 const port = process.env.PORT || 3000;
 
@@ -15,41 +15,20 @@ app.use(express.static(publicPath));
 io.on('connection', (socket) => {
   console.log('New user connected');
 
-  // socket.emit('newMessage', {
-  //   from: 'alan',
-  //   text: 'Emit new message',
-  //   createdAt: '123'
-  // });
+  socket.emit('newMessage', generateMessage('admin', 'Welcome to the Chat App'))
+  // from: 'admin',
+  // text: 'Welcome to the Chat App',
+  // createdAt: new Date().getTime()
+  socket.broadcast.emit('newMessage',
+    generateMessage('admin', 'A New User has joined the room')
+      // from: 'admin',
+      // text: 'new user has joined the room',
+      // createdAt: new Date().getTime()
+  )
 
-  // socket.emit only to the user which has joined a welcome Message
-  // socket.broadcast.emit telling all other users that the new user has joined the chat room
-
-  socket.emit('newMessage', {
-    from: 'admin',
-    text: 'Welcome to the Chat App',
-    createdAt: new Date().getTime()
-  })
-
-  socket.broadcast.emit('newMessage', {
-      from: 'admin',
-      text: 'new user has joined the room',
-      createdAt: new Date().getTime()
-  })
-
-  socket.on('createMessage', (createMessage) => {
-    console.log('create Message', createMessage);
-    // io.emit('newMessage', {
-    //   from: createMessage.from,
-    //   text: createMessage.text,
-    //   createdAt: new Date().getTime()
-    // });
-
-    // socket.broadcast.emit('newMessage', {
-    //   from: createMessage.from,
-    //   text: createMessage.text,
-    //   createAdt: new Date().getTime()
-    // })
-
+  socket.on('createMessage', (message, callback) => {
+    console.log('create Message', message);
+    io.emit('newMessage', generateMessage(message.from, message.text));
   })
 
   socket.on('disconnect', () => {
@@ -60,5 +39,3 @@ io.on('connection', (socket) => {
 app.get('/', (req, res) => res.send('Hello World!'));
 
 server.listen(port, () => console.log(`App is listening on port ${port}`));
-//app.listen
-//start up server and start up in terminal and go to the localhost.
