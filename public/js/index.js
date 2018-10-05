@@ -4,16 +4,40 @@ socket.on('connect', function () {
 
   // socket.emit('createMessage', {
   //   from: 'john',
-  //   text: 'This is a new message about testing socket.io'
+  //   text: 'This is a new mess age about testing socket.io'
   // });
 });
 
-socket.on('newMessage', function (newMessage) {
-  var li = jQuery('<li></li>');
-  var formattedTime = moment().format('h:mm a');
-  li.text(`${newMessage.from} ${formattedTime}: ${newMessage.text}`);
+function scrollToBottom () {
+  // Selectors
+  var messages = jQuery('#messages');
+  var newMessage = messages.children('li:last-child');
+  // Heights
+  var clientHeight = messages.prop('clientHeight');
+  var scrollTop = messages.prop('scrollTop');
+  var scrollHeight = messages.prop('scrollHeight');
+  var newMessageHeight = newMessage.innerHeight();
+  var lastMessageHeight = newMessage.prev().innerHeight();
 
-  jQuery('#messages').append(li);
+  // console.log(`clientHeight: ${clientHeight}, scrollTop ${scrollTop}, scrollHeight: ${scrollHeight}, newMessageHeight: ${newMessageHeight}, lastMessageHeight: ${lastMessageHeight}`);
+  // console.log(`clientHeight + scrollTop + newMessageHeight +lastMessageHeight is ${clientHeight + scrollTop + scrollHeight + newMessageHeight +lastMessageHeight} : scrollHeight is ${scrollHeight}`);
+  if (clientHeight + scrollTop + newMessageHeight +lastMessageHeight >= scrollHeight) {
+    messages.scrollTop(scrollHeight);
+  }
+};
+
+socket.on('newMessage', function (newMessage) {
+  var template = jQuery('#message-template').html();
+  var formattedTime = moment(newMessage.createdAt).format('h:mm a');
+  var html = Mustache.render(template, {
+    from: newMessage.from,
+    createdAt: formattedTime,
+    text: newMessage.text
+  });
+
+  jQuery('#messages').append(html);
+
+  scrollToBottom();
 });
 
 socket.on('disconnect', function () {
@@ -21,14 +45,18 @@ socket.on('disconnect', function () {
 });
 
 socket.on('newLocationMessage', function (message) {
-  var li = jQuery('<li></li>');
-  var a = jQuery('<a target="_blank">My Current Location</a>')
-  var formattedTime = moment().format('h:mm a');
+  var template = jQuery('#location-message-template').html();
+  var formattedTime = moment(message.createdAt).format('h:mm a');
+  console.log(message.url);
+  var html = Mustache.render(template, {
+    from: message.from,
+    createdAt: formattedTime,
+    url: message.url
+  });
 
-  li.text(`${message.from} ${formattedTime}: `);
-  a.attr('href', message.url);
-  li.append(a);
-  jQuery('#messages').append(li);
+  jQuery('#messages').append(html);
+
+  scrollToBottom();
 });
 
 jQuery('#message-form').on('submit', function (e) {

@@ -5,7 +5,7 @@ var generateMessage = (from, text) => {
   return {
     from,
     text,
-    createAt: moment().valueOf()
+    createdAt: moment().valueOf()
   };
 };
 
