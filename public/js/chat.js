@@ -1,13 +1,12 @@
 var socket = io();
 socket.on('connect', function () {
   var params = jQuery.deparam(window.location.search);
-  console.log(window.location.search);
   socket.emit('join', params, function (err) {
     if (err) {
       alert(err);
       window.location.href = '/';
     } else {
-      console.log('No error');
+      console.log('No Errors');
     }
   });
 });
@@ -42,6 +41,19 @@ socket.on('newMessage', function (newMessage) {
   scrollToBottom();
 });
 
+socket.on('usersInRoom', function (user) {
+  var name = user.name;
+  var template = jQuery('#users-list-template').html();
+  var html = Mustache.render(template, {
+    user: name
+  });
+    if (user.isOnline === true) {
+      jQuery('#users-list').append(html);
+    } else if (user.isOnline === false) {
+      jQuery('li').filter(function () {return jQuery.text([this]).trim() === name;}).remove();
+    }
+  });
+
 socket.on('disconnect', function () {
   console.log('Disconnected from server');
 });
@@ -49,7 +61,6 @@ socket.on('disconnect', function () {
 socket.on('newLocationMessage', function (message) {
   var template = jQuery('#location-message-template').html();
   var formattedTime = moment(message.createdAt).format('h:mm a');
-  console.log(message.url);
   var html = Mustache.render(template, {
     from: message.from,
     createdAt: formattedTime,
@@ -64,8 +75,6 @@ socket.on('newLocationMessage', function (message) {
 jQuery('#message-form').on('submit', function (e) {
   e.preventDefault();
   var params = jQuery.deparam(window.location.search);
-  console.log(window.location.search);
-  console.log(`params ${params}`);
   var messageTextBox = jQuery('[name=message]');
 
   socket.emit('createMessage', {

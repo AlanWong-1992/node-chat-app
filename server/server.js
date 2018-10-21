@@ -30,9 +30,12 @@ io.on('connection', (socket) => {
     userList.addUser(userCount, params.name, params.room);
     userId = parseInt(userCount);
     userCount += 1;
-    // console.log(userList.users);
     socket.join(params.room);
     socket.emit('newMessage', generateMessage('admin', 'Welcome to the Chat App'));
+    var theUser = userList.getUser(userId);
+    theUser.isOnline = true; // Add this property to see if we should add or remove the user
+    io.in(params.room).emit('usersInRoom', theUser);
+    // socket.emit('usersInRoom', userList.getUserList(params.room));
     socket.broadcast.to(params.room).emit('newMessage',generateMessage('admin', `${params.name} has joined the room`));
     callback();
   });
@@ -52,8 +55,9 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    userList.removeUser(userId);
-    console.log(userList.users);
+    var user = userList.getUser(userId);
+    user.isOnline = false;
+    io.in(user.room).emit('usersInRoom', user);
     console.log('User disconnected');
   });
 });
