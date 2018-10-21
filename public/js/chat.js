@@ -1,11 +1,15 @@
 var socket = io();
 socket.on('connect', function () {
-  console.log('Connected to server');
-
-  // socket.emit('createMessage', {
-  //   from: 'john',
-  //   text: 'This is a new mess age about testing socket.io'
-  // });
+  var params = jQuery.deparam(window.location.search);
+  console.log(window.location.search);
+  socket.emit('join', params, function (err) {
+    if (err) {
+      alert(err);
+      window.location.href = '/';
+    } else {
+      console.log('No error');
+    }
+  });
 });
 
 function scrollToBottom () {
@@ -19,8 +23,6 @@ function scrollToBottom () {
   var newMessageHeight = newMessage.innerHeight();
   var lastMessageHeight = newMessage.prev().innerHeight();
 
-  // console.log(`clientHeight: ${clientHeight}, scrollTop ${scrollTop}, scrollHeight: ${scrollHeight}, newMessageHeight: ${newMessageHeight}, lastMessageHeight: ${lastMessageHeight}`);
-  // console.log(`clientHeight + scrollTop + newMessageHeight +lastMessageHeight is ${clientHeight + scrollTop + scrollHeight + newMessageHeight +lastMessageHeight} : scrollHeight is ${scrollHeight}`);
   if (clientHeight + scrollTop + newMessageHeight +lastMessageHeight >= scrollHeight) {
     messages.scrollTop(scrollHeight);
   }
@@ -61,11 +63,13 @@ socket.on('newLocationMessage', function (message) {
 
 jQuery('#message-form').on('submit', function (e) {
   e.preventDefault();
-
+  var params = jQuery.deparam(window.location.search);
+  console.log(window.location.search);
+  console.log(`params ${params}`);
   var messageTextBox = jQuery('[name=message]');
 
   socket.emit('createMessage', {
-    from: 'User',
+    from: params.name,
     text: messageTextBox.val()
   }, function () {
     messageTextBox.val('');
