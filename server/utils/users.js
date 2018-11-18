@@ -13,7 +13,7 @@ class Users {
   removeUser(id) {
     var user = this.users.filter((user) => user.id === id);
     if (user) {
-      this.users = this.users.filter((user) => user.id !== id) [0];
+      this.users = this.users.filter((user) => user.id !== id);
     }
     return user;
   }

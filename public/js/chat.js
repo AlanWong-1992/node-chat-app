@@ -1,6 +1,9 @@
 var socket = io();
+var currentUser;
 socket.on('connect', function () {
+  console.log('Server has connected');
   var params = jQuery.deparam(window.location.search);
+  currentUser = params.name;
   socket.emit('join', params, function (err) {
     if (err) {
       alert(err);
@@ -41,21 +44,16 @@ socket.on('newMessage', function (newMessage) {
   scrollToBottom();
 });
 
-socket.on('usersInRoom', function (user) {
-  var name = user.name;
-  var template = jQuery('#users-list-template').html();
-  var html = Mustache.render(template, {
-    user: name
+socket.on('updateUsersList', function (users) {
+  var ol = jQuery('<ol></ol>');
+  users.forEach((user) => {
+    ol.append(jQuery('<li></li>').text(user));
   });
-    if (user.isOnline === true) {
-      jQuery('#users-list').append(html);
-    } else if (user.isOnline === false) {
-      jQuery('li').filter(function () {return jQuery.text([this]).trim() === name;}).remove();
-    }
-  });
+  jQuery('#users').html(ol);
+});
 
 socket.on('disconnect', function () {
-  console.log('Disconnected from server');
+  console.log('The Server has Disconnected');
 });
 
 socket.on('newLocationMessage', function (message) {
